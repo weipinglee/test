@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="test" default="build">
- <target name="build" depends="make_runtime,phpunit,check,tar"/>
+ <target name="build" depends="test,db_chg"/>
+ <includepath classpath="C:\Program Files\Java\jdk1.8.0_171\lib" />
+ <includepath classpath="D:\wamp64\build\liquibase-3.6.1" />
  <property name="version-m"  value="1.1" />
  <property name="version"    value="1.1.0" />
  <property name="stability"  value="stable" />
@@ -8,46 +10,76 @@
  <property name="tarfile"     value="${phing.project.name}.${buildnumber}.${buildid}.tar.gz" />
  <property name="pkgfile"     value="${phing.project.name}.${version}.tgz" />
  <property name="distfile"    value="dist/${tarfile}" />
- <property name="tests.dir" value="test" />
- <fileset id="api.tar.gz" dir="test">
-  <include name="test/**"/>
-  <include name="*.php"/>
-  <include name="*.xml"/>
- </fileset>
- <target name="make_runtime">
-  <mkdir dir="${project.basedir}/Runtime" />
-  <mkdir dir="${project.basedir}/build/logs" />
-  <mkdir dir="${project.basedir}/build/pdepend" />
-  <mkdir dir="${project.basedir}/build/code-browser" />
- </target>
+ <property name="tests.dir" value="${project.basedir}/test" />
+ <property name="deploy.user" value="root" />
+ <property name="deploy.password" value="123456" />
+ <!--<target name="make_runtime">-->
+  <!--<mkdir dir="${project.basedir}/Runtime" />-->
+  <!--<mkdir dir="${project.basedir}/build/logs" />-->
+  <!--<mkdir dir="${project.basedir}/build/pdepend" />-->
+  <!--<mkdir dir="${project.basedir}/build/code-browser" />-->
+ <!--</target>-->
 
 
  <target name="phpunit" description="Run unit tests with PHPUnit">
   <exec executable="phpunit" />
  </target>
  <target name="test" description="Run PHPUnit tests">
-  <phpunit haltonerror="true" haltonfailure="true" printsummary="true">
-   <batchtest>
-    <fileset dir="${tests.dir}">
-     <include name="**/*Test.php" />
-    </fileset>
-   </batchtest>
-  </phpunit>
+  <!--<autoloader autoloaderpath="D:/wamp64/vendor/autoload.php"/>-->
+
+  <exec logoutput="true" checkreturn="true"  command="phpunit --verbose ${project.basedir}/test" />
+  <!--<phpunit haltonerror="true" haltonfailure="true" printsummary="true"   pharlocation="D:\wamp64\vendor\bin">-->
+
+   <!--<batchtest>-->
+    <!--<fileset dir="${project.basedir}/test">-->
+     <!--<include name="**/*Test.php" />-->
+    <!--</fileset>-->
+
+   <!--</batchtest>-->
+
+  <!--</phpunit>-->
  </target>
 
- <target name="check" description="Check variables" >
-  <fail unless="version" message="Version not defined!" />
-  <fail unless="buildnumber" message="buildnumber not defined!" />
-  <fail unless="buildid" message="buildid not defined!" />
-  <delete dir="dist" failonerror="false" />
-  <mkdir dir="dist" />
- </target>
 
- <target name="tar" depends="check" description="Create tar file for release">
-  <echo msg="Creating distribution tar for ${phing.project.name} ${version}"/>
-  <delete file="${distfile}" failonerror="false"/>
-  <tar destfile="${distfile}" compression="gzip">
-   <fileset refid="api.tar.gz"/>
-  </tar>
+ <path id="liquibase.path">
+  <pathelement path="D:\wamp64\build\liquibase-3.6.1\liquibase.jar" />
+  <pathelement path="D:\wamp64\build\liquibase-3.6.1\lib\mysql-connector-java\mysql-connector-java.jar" />
+ </path>
+
+ <target name="db_chg" description="change the db">
+  <!--<exec logoutput="true" checkreturn="true"  command="liquibase &#45;&#45;driver=com.mysql.jdbc.Driver &#45;&#45;classpath=D:\wamp64\build\liquibase-3.6.1\lib\mysql-connector-java\mysql-connector-java.jar &#45;&#45;changeLogFile=D:\wamp64\www\test\db\chg.xml &#45;&#45;url='jdbc:mysql://localhost:3306/test' &#45;&#45;username=root &#45;&#45;password=123456 update" />-->
+
+  <liquibase
+         jar="D:\wamp64\build\liquibase-3.6.1\liquibase.jar"
+         classpathref="D:\wamp64\build\liquibase-3.6.1\lib\mysql-connector-java\mysql-connector-java.jar"
+         changelogFile="${project.basedir}/db/chg.xml"
+         username="${deploy.user}"
+         password="${deploy.password}"
+         url="jdbc:mysql://localhost:3306/test"
+         display='true'
+         checkreturn="true"
+         passthru='false'
+         outputProperty="liquibase.updateSQL.output"
+         command="update"
+ >
+
+  <parameter name="logLevel" value="info" />
+
+ </liquibase>
  </target>
+ <!--<target name="check" description="Check variables" >-->
+  <!--<fail unless="version" message="Version not defined!" />-->
+  <!--<fail unless="buildnumber" message="buildnumber not defined!" />-->
+  <!--<fail unless="buildid" message="buildid not defined!" />-->
+  <!--<delete dir="dist" failonerror="false" />-->
+  <!--<mkdir dir="dist" />-->
+ <!--</target>-->
+
+ <!--<target name="tar" depends="check" description="Create tar file for release">-->
+  <!--<echo msg="Creating distribution tar for ${phing.project.name} ${version}"/>-->
+  <!--<delete file="${distfile}" failonerror="false"/>-->
+  <!--<tar destfile="${distfile}" compression="gzip">-->
+   <!--<fileset refid="api.tar.gz"/>-->
+  <!--</tar>-->
+ <!--</target>-->
 </project>

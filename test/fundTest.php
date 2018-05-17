@@ -9,7 +9,7 @@
 
 require 'D:/wamp64/vendor/autoload.php';
 use PHPUnit\Framework\TestCase;
-class demoTest extends TestCase
+class fundTest extends TestCase
 {
 
 
@@ -21,12 +21,10 @@ class demoTest extends TestCase
 
       }
 
-      public function testFund(){
-          $arr = array(1,2,3);
+      public function testCheck(){
+          $num = 4;
 
-          $this->assertEquals(3,count($arr));
-          array_push($arr,4);
-          $this->assertEquals(4,count($arr));
+          $this->assertEquals(4,$num);
 
       }
 
